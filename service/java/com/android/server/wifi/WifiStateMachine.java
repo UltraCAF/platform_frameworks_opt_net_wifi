@@ -1400,7 +1400,6 @@ public class WifiStateMachine extends StateMachine implements WifiNative.WifiRss
         mCountryCode.enableVerboseLogging(mVerboseLoggingLevel);
         mWifiLogger.startLogging(DBG);
         mWifiMonitor.enableVerboseLogging(mVerboseLoggingLevel);
-        mWifiP2pServiceImpl.enableVerboseLogging(mVerboseLoggingLevel);
         mWifiNative.enableVerboseLogging(mVerboseLoggingLevel);
         mWifiConfigManager.enableVerboseLogging(mVerboseLoggingLevel);
         mSupplicantStateTracker.enableVerboseLogging(mVerboseLoggingLevel);
