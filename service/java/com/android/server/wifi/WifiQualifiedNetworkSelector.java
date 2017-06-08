@@ -66,7 +66,7 @@ public class WifiQualifiedNetworkSelector {
     private static final String TAG = "WifiQualifiedNetworkSelector:";
     private boolean skipQualifiedNetworkSelectionForAutoConnect = false;
     // Always enable debugging logs for now since QNS is still a new feature.
-    private static final boolean FORCE_DEBUG = false;
+    private static final boolean FORCE_DEBUG = true;
     private boolean mDbg = FORCE_DEBUG;
     private WifiConfiguration mCurrentConnectedNetwork = null;
     private String mCurrentBssid = null;
@@ -325,10 +325,8 @@ public class WifiQualifiedNetworkSelector {
             return false;
         }
 
-        int currentBand = mWifiInfo.is24GHz() ?
-                 WifiManager.WIFI_FREQUENCY_BAND_2GHZ : WifiManager.WIFI_FREQUENCY_BAND_5GHZ;
         // Current network band must match with user preference selection
-        if (currentBand != mUserPreferedBand) {
+        if (mWifiInfo.is24GHz() && (mUserPreferedBand != WifiManager.WIFI_FREQUENCY_BAND_2GHZ)) {
             localLog("Current band does not match user preference. Start Qualified Network"
                     + " Selection Current band = " + (mWifiInfo.is24GHz() ? "2.4GHz band"
                     : "5GHz band") + "UserPreference band = " + mUserPreferedBand);
@@ -438,15 +436,11 @@ public class WifiQualifiedNetworkSelector {
             WifiConfiguration currentNetwork, boolean sameBssid, boolean sameSelect,
             StringBuffer sbuf) {
 
-        // get the band-specific saturation threshold
-        int saturationThreshold = scanResult.is24GHz() ?
-                mWifiConfigManager.mThresholdSaturatedRssi24.get() :
-                mWifiConfigManager.mThresholdSaturatedRssi5.get();
-
-        // calculate the RSSI score, capped by the saturation threshold
-        int rssi = Math.min(scanResult.level, saturationThreshold);
-
-        int score = (rssi + mRssiScoreOffset) * mRssiScoreSlope;
+        int score = 0;
+        //calculate the RSSI score
+        int rssi = scanResult.level <= mWifiConfigManager.mThresholdSaturatedRssi24.get()
+                ? scanResult.level : mWifiConfigManager.mThresholdSaturatedRssi24.get();
+        score += (rssi + mRssiScoreOffset) * mRssiScoreSlope;
         sbuf.append(" RSSI score: " +  score);
         if (scanResult.is5GHz()) {
             //5GHz band
